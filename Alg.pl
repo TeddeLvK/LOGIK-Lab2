@@ -11,17 +11,13 @@ valid_proof(Prems, Goal, Proof) :-
 check_goal(Goal, Proof) :-
     last(Proof, [_, Goal, _]).
 
-check_goal(Goal, Proof) :-
-    last(Proof, Box),
-    is_list(Box),
-    last(Box, [_, Goal, _]).
-
 check_proof(_, [], _).
 
 check_proof(Prems, [Box | Rest], Validated) :-
     is_list(Box),
-    Box = [[_, _, assumption] | _],
-    check_proof(Prems, Box, Validated),
+    Box = [Assump | BoxRest],
+    Assump = [_, _, assumption],
+    check_proof(Prems, BoxRest, [Assump | Validated]),
     check_proof(Prems, Rest, [Box | Validated]).
 
 check_proof(Prems, [Line | Rest], Validated) :-
@@ -31,8 +27,6 @@ check_proof(Prems, [Line | Rest], Validated) :-
 
 valid_rule(premise, Formula, Prems, _) :-
     member(Formula, Prems).
-
-valid_rule(assumption, _, _, _).
 
 valid_rule(copy(X), Formula, _, Validated) :-
     member([X, Formula, _], Validated).
@@ -71,8 +65,8 @@ valid_rule(impint(X, Y), imp(F1, F2), _, Validated) :-
     last(Box, [Y, F2, _]).
 
 valid_rule(impel(X, Y), F, _, Validated) :-
-    member([X, imp(F1, F), _], Validated),
-    member([Y, F1, _], Validated).
+    member([X, F1, _], Validated),
+    member([Y, imp(F1, F), _], Validated).
 
 valid_rule(negint(X, Y), neg(F), _, Validated) :-
     member(Box, Validated),
